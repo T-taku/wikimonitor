@@ -23,7 +23,7 @@ function notify_user($user, $type, $info) {
 	}
 	//check if the user's talk page allows bots, and if it does, check if the name is on the nobots override list
 	$overridenobots = false;
-	$talk = get_page_contents('User_talk:' . $user);
+	$talk = get_page_contents('利用者・トーク:' . $user);
 	if (stristr($talk, '{{nobots}}')) { //check for nobots
 		preg_match_all('%<nowiki>(.*?)' . preg_quote('{{nobots}}') . '(.*?)</nowiki>%msi', $talk, $nowikimatches);
 		preg_match_all('%' . preg_quote('{{nobots}}') . '%msi', $talk, $nobotsmatches);
@@ -43,18 +43,18 @@ function notify_user($user, $type, $info) {
 		case 'sign':
 			$message = str_replace('($revid)', $info['revid'], str_replace('($page)', $info['page'], $UNSIGNED_MESSAGE_BODY));
 			$subject = $UNSIGNED_MESSAGE_SUBJECT;
-			$summary = 'Unsigned post: [[Special:Diff/' . $info['revid'] . '|Revision ' . $info['revid'] . ']] of [[' . $info['page'] . ']]';
+			$summary = '署名なしのトーク: [[Special:Diff/' . $info['revid'] . '|Revision ' . $info['revid'] . ']] of [[' . $info['page'] . ']]';
 			$datasignature = 'nosign-' . $info['revid'];
 			break;
 		case 'excessive':
 			$message = str_replace('($count)', $info['count'], str_replace('($page)', $info['page'], $RAPID_MESSAGE_BODY));
 			$subject = $RAPID_MESSAGE_SUBJECT;
-			$summary = 'Excessive editing on page: [[' . $info['page'] . ']]';
+			$summary = 'ページの過度な編集: [[' . $info['page'] . ']]';
 			$datasignature = 'rapid-' . $info['page'] . floor(time() / (60 * 60 * 24)) . '|' . 'rapid-' . $info['page'] . (floor(time() / (60 * 60 * 24)) + 1);
 			break;
 		case 'uncat':
 			$message = str_replace('($page)', $info['page'], $NOCAT_MESSAGE_BODY);
-			$summary = 'No category on new page: [[' . $info['page'] . ']]';
+			$summary = 'ページ作成時のカテゴリなし: [[' . $info['page'] . ']]';
 			$subject = $NOCAT_MESSAGE_SUBJECT;
 			$datasignature = 'uncat-' . $info['page'];
 			break;
@@ -222,7 +222,7 @@ function checkEditCounts($rc_json, $limit, $period) {
 			$type = (string)$edit->type;
 			if ($type == 'edit') {
 				$title = (string)$edit->title;
-				if (!stristr($title, 'talk:')) {
+				if (!stristr($title, 'トーク:')) {
 					//we have a non-talk edit, so add that to the tally of the number of edits made by this user in this time
 					$user = (string)$edit->user;
 					if (isset($counts[$title][$user])) {
@@ -280,7 +280,7 @@ function checkUnsignedPosts($rc_json) {
 		if ($type == 'edit' && !in_array($id, $already_seen_edits)) {
 			//we haven't seen this edit before, proceed
 			$title = (string)$edit->title;
-			if (stristr($title, 'talk:') && !isset($edit->minor)) {
+			if (stristr($title, 'トーク:') && !isset($edit->minor)) {
 				//it's a talk page edit and not marked as minor, see if it's a new message
 				$oldid = (int)$edit->old_revid;
 				$newid = (int)$edit->revid;
@@ -439,7 +439,7 @@ function checkMissingCategories($rc_json) {
 				}
 			}
 			//it's either an uploaded file or a new non-user page
-			if (($type == 'new' && strpos($title, 'User') !== 0 && !stristr($title, 'talk:') && !stristr($title, 'mediawiki:')) || ($type == 'log' && $logtype == 'upload' && $oldrevid == 0)) {
+			if (($type == 'new' && strpos($title, '利用者') !== 0 && !stristr($title, 'トーク:') && !stristr($title, 'mediawiki:')) || ($type == 'log' && $logtype == 'upload' && $oldrevid == 0)) {
 				$timestamp = strtotime((string)$edit->timestamp);
 				
 				$user = (string)$edit->user;
@@ -474,7 +474,7 @@ function checkMissingCategories($rc_json) {
 				$has_category = $has_category || checkForCategory($title, $category_templates);
 				if (!$has_category) {
 					echo "\033[1;41m" . '[NOTIF]' . "\033[0m" . ' [UNCAT] ' . $user . ' did not include category on page ' . $title . "\n";
-					if (strpos($title, 'File:') === 0 || strpos($title, 'Category:') === 0) {
+					if (strpos($title, 'ファイル:') === 0 || strpos($title, 'カテゴリ:') === 0) {
 						$title = ':' . $title;
 					}
 					notify_user($user, 'uncat', array('page' => $title));
@@ -489,8 +489,8 @@ function checkMissingCategories($rc_json) {
 function checkForCategory($title, $category_templates) {
 	$contents = get_page_contents($title);
 	//if the page is a redirect, has a category, or has a category template, than it's good
-	if (stristr($contents, '#REDIRECT')
-		|| preg_match('%\[\[\W*Category:%i', $contents)
+	if (stristr($contents, '#転送')
+		|| preg_match('%\[\[\W*カテゴリ:%i', $contents)
 		|| preg_match('%\{\{\W*(' . implode('|', $category_templates) . ')%i', $contents)) {
 		return true;
 	} else {
@@ -510,7 +510,7 @@ function checkSandbox($rc_json, $SANDBOX_TIMEOUT, $DEFAULT_SANDBOX_TEXT) {
 			$id = (int)$edit->rcid;
 			if (!in_array($id, $already_seen_edits)) {
 				$timestamp = strtotime((string)$edit->timestamp);
-				if ($title == 'Scratch Wiki:Sandbox' && get_page_contents('Scratch Wiki:Sandbox') != $DEFAULT_SANDBOX_TEXT) {
+				if ($title == 'Japanese Scratch-Wiki:サンドボックス' && get_page_contents('Japanese Scratch-Wiki:サンドボックス') != $DEFAULT_SANDBOX_TEXT) {
 					//since the RC are in reverse order, we need to make sure we only update the sandbox clear time if it's later
 					$newtimetoclearsandbox = $timestamp + $SANDBOX_TIMEOUT * 60;
 					if ($newtimetoclearsandbox > $timetoclearsandbox) {
@@ -523,10 +523,10 @@ function checkSandbox($rc_json, $SANDBOX_TIMEOUT, $DEFAULT_SANDBOX_TEXT) {
 		}
 	}
 	
-	if ($timetoclearsandbox != null && $timetoclearsandbox <= time() && trim(get_page_contents('Scratch Wiki:Sandbox')) != trim($DEFAULT_SANDBOX_TEXT)) {		
+	if ($timetoclearsandbox != null && $timetoclearsandbox <= time() && trim(get_page_contents('Japanese Scratch-Wiki:サンドボックス')) != trim($DEFAULT_SANDBOX_TEXT)) {		
 		$timetoclearsandbox = null;
 		
 		echo '[EDIT] Clearing sandbox' . "\n";
-		submit_edit('Scratch Wiki:Sandbox', $DEFAULT_SANDBOX_TEXT, 'Automatically clearing sandbox', true);
+		submit_edit('Japanese Scratch-Wiki:サンドボックス', $DEFAULT_SANDBOX_TEXT, '自動サンドボックスリセット', true);
 	}
 }

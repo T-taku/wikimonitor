@@ -1,5 +1,5 @@
 <?php
-define('WIKI_API_URL', 'https://en.scratch-wiki.info/w/api.php');
+define('WIKI_API_URL', 'https://ja.scratch-wiki.info/w/api.php');
 define('DEBUG', 1);
 include realpath(dirname(__FILE__) . '/..') . '/includes/wikifunctions.php';
 include realpath(dirname(__FILE__) . '/..') . '/includes/genfunctions.php';
@@ -43,7 +43,7 @@ foreach ($tests as $test => $expected) {
 	} else {
 		$revids = explode('|', $test);
 		echo "\033[1;41m" . 'Result: [FAIL]' . "\033[0m" . "\n";
-		echo 'View edit at https://en.scratch-wiki.info/w/index.php?diff=' . $revids[1] . "\n";
+		echo 'View edit at https://ja.scratch-wiki.info/w/index.php?diff=' . $revids[1] . "\n";
 		die;
 	}
 	echo "\n";

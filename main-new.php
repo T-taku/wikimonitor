@@ -1,6 +1,5 @@
 <?php
-define('WIKI_API_URL', 'https://en.scratch-wiki.info/w/api.php');
-
+define('WIKI_API_URL', 'https://ja.scratch-wiki.info/w/api.php');
 //include necessary libaries
 include 'includes/wikifunctions.php';
 include 'includes/genfunctions.php';

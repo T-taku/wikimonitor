@@ -95,8 +95,10 @@ function notify_user($user, $type, $info) {
 
 function submit_edit($title, $contents, $summary, $minor = false) {
 	checkshutoff();
-	$tokenxml = new SimpleXMLElement(curl_post(WIKI_API_URL . '?action=query&prop=info|revisions&intoken=edit&titles=' . rawurlencode($title) . '&format=xml', '', true)); //get token
-	$edittoken = (string)$tokenxml->query->pages->page->attributes()->edittoken;
+	$tokenJson = json_decode(curl_post(WIKI_API_URL . '?action=query&format=json&meta=tokens', ''));
+	
+	$edittoken = (string)$tokenJson->query->tokens->csrftoken;
+		
 	$return = curl_post(WIKI_API_URL . '', 'action=edit&title=' . rawurlencode($title) . '&summary=' . $summary . '&text=' . rawurlencode($contents) . '&format=xml&bot=true' . ($minor = true ? '&minor=true' : '') . '&token=' . rawurlencode($edittoken)); //submit the edit
 }
 
@@ -280,7 +282,7 @@ function checkUnsignedPosts($rc_json) {
 		if ($type == 'edit' && !in_array($id, $already_seen_edits)) {
 			//we haven't seen this edit before, proceed
 			$title = (string)$edit->title;
-			if (stristr($title, 'トーク:') && !isset($edit->minor)) {
+			if (stristr($title, TALK_INDICATOR) && !isset($edit->minor)) {
 				//it's a talk page edit and not marked as minor, see if it's a new message
 				$oldid = (int)$edit->old_revid;
 				$newid = (int)$edit->revid;
@@ -529,4 +531,8 @@ function checkSandbox($rc_json, $SANDBOX_TIMEOUT, $DEFAULT_SANDBOX_TEXT) {
 		echo '[EDIT] Clearing sandbox' . "\n";
 		submit_edit('Japanese Scratch-Wiki:サンドボックス', $DEFAULT_SANDBOX_TEXT, '自動サンドボックスリセット', true);
 	}
+}
+
+function purgeCache(array $titles) {
+	curl_post(WIKI_API_URL . '?action=purge&titles=' . rawurlencode(implode('|', $titles)), '');
 }

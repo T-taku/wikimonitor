@@ -60,7 +60,7 @@ function notify_user($user, $type, $info) {
 			break;
 	}
 	//check if user was already notified
-	$data = curl_get(WIKI_API_URL . '?action=query&prop=revisions&titles=User_talk:'.  rawurlencode($user) . '&rvlimit=50&rvprop=timestamp|user|comment&format=xml');
+	$data = curl_get(WIKI_API_URL . '?action=query&prop=revisions&titles=利用者・トーク:'.  rawurlencode($user) . '&rvlimit=50&rvprop=timestamp|user|comment&format=xml');
 	$historyxml = new SimpleXMLElement($data);
 	if (isset($historyxml->query->pages->page->revisions->rev)) {
 		foreach ($historyxml->query->pages->page->revisions->rev as $rev) {
@@ -89,7 +89,7 @@ function notify_user($user, $type, $info) {
 		$tokenxml = new SimpleXMLElement(curl_post(WIKI_API_URL . '?action=query&prop=info|revisions&intoken=edit&titles=User_talk:' . rawurlencode($user) . '&format=xml', '', true)); //get token
 		$edittoken = (string)$tokenxml->query->pages->page->attributes()->edittoken;
 
-		$return = curl_post(WIKI_API_URL . '', 'action=edit&title=User_talk:' . $user . '&section=new&sectiontitle=' . $subject . '&summary=' . rawurlencode($summary . ' (' . $datasignature . ')') . '&text=' . rawurlencode($message) . '&tags=wikimonitor-notification&format=xml&bot=true&token=' . rawurlencode($edittoken)); //submit the edit
+		$return = curl_post(WIKI_API_URL . '', 'action=edit&title=利用者・トーク:' . $user . '&section=new&sectiontitle=' . $subject . '&summary=' . rawurlencode($summary . ' (' . $datasignature . ')') . '&text=' . rawurlencode($message) . '&tags=wikimonitor-notification&format=xml&bot=true&token=' . rawurlencode($edittoken)); //submit the edit
 	}
 }
 
